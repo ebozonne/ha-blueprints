@@ -1,0 +1,47 @@
+blueprint:
+  name: cover_position_FIX
+  description: Fix roller shutter states according to their current position
+  domain: automation
+  input:
+    cover_entity:
+      name: "🏠 Cover"
+      description: Which blind or roller shutter should be fixed
+      selector:
+        entity:
+          filter:
+            - domain:
+                - cover
+
+trigger_variables:
+  the_cover: !input cover_entity
+
+triggers:
+  - trigger: template
+    value_template: "{{ state_attr(the_cover, 'current_position') == 0 }}"
+    id: COVER_CLOSED
+  - trigger: template
+    value_template: "{{ state_attr(the_cover, 'current_position') == 100 }}"
+    id: COVER_OPENED
+
+conditions: []
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - COVER_CLOSED
+        sequence:
+          - action: cover.close_cover
+            target:
+              entity_id: !input cover_entity
+      - conditions:
+          - condition: trigger
+            id:
+              - COVER_OPENED
+        sequence:
+          - action: cover.open_cover
+            target:
+              entity_id: !input cover_entity
+
+mode: single
